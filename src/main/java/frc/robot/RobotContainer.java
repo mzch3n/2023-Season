@@ -1,7 +1,11 @@
 package frc.robot;
 
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -27,6 +31,15 @@ public class RobotContainer {
     // The robot's subsystems
     public final static DriveTrain driveTrain = new DriveTrain();
 
+    public Command getAutonomousCommand() {
+        TrajectoryConfig config = new TrajectoryConfig(Units.feetToMeters(2), Units.feetToMeters(2));
+        config.setKinematics(driveTrain.getKinematics());
+
+        Trajectory trajectory = TrajectoryGenerator.generateTrajectory(Arrays.asList(new Pose2d(), newPose2d(1.0, 0, new Rotation2d())), config
+        );
+
+    }
+
     // Joysticks
     public static Joystick joystick = new Joystick(JoystickConstants.JOYSTICK_PORT);
     public static Joystick xbox = new Joystick(XboxConstants.XBOX_PORT);
@@ -43,6 +56,8 @@ public class RobotContainer {
             new ArcadeDriveCmd(driveTrain,
                 () -> -driveTurnControls.getDrive(),
                 () -> driveTurnControls.getTurn()));
+
+    
 
     }
 

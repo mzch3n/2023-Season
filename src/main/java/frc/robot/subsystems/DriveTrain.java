@@ -16,9 +16,12 @@ import com.revrobotics.RelativeEncoder;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -61,13 +64,18 @@ public class DriveTrain extends SubsystemBase {
     private DoubleSolenoid shifter;
 
     // simulation
+    private DifferentialDriveKinematics kinematics;
     private DifferentialDriveOdometry odometry;
+    SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(.268, 1.89, 0.243);
 
     public SimEncoder leftEncoderSim;
     public SimEncoder rightEncoderSim;
     public SimGyro gyroSim;
     private DifferentialDrivetrainSim driveSim;
     private Field2d field = new Field2d();
+
+    PIDController leftPIDController = new PIDController(9.95, 0, 0);
+    PIDController rightPIDController = new PIDController(9.95, 0, 0);
 
     public DriveTrain() {
 
@@ -130,6 +138,7 @@ public class DriveTrain extends SubsystemBase {
             leftEncoderSim = new SimEncoder("Left Drive");
             rightEncoderSim = new SimEncoder("Right Drive");
             gyroSim = new SimGyro("NavX");
+            kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(25));
             odometry = new DifferentialDriveOdometry(gyroSim.getAngle(), leftEncoderSim.getDistance(), rightEncoderSim.getDistance(), new Pose2d(9, 6.5, new Rotation2d(3.14/2)));
             // Create the simulation model of our drivetrain.
             driveSim = new DifferentialDrivetrainSim(
@@ -154,6 +163,29 @@ public class DriveTrain extends SubsystemBase {
 
             field.setRobotPose(new Pose2d(9, 6.5, new Rotation2d(3.14/2)));
         }
+    }
+
+    public Rotation2d getHeading() {
+        return gyroSim.getAngle().unaryMinus();
+    }
+
+    public DifferentialDriveWheelSpeeds getSpeeds() {
+        return new DifferentialDriveWheelSpeeds(
+            leftEncoderSim.getSpeed() / DriveConstants.GEAR_RATIO * 2 * Math.PI * Units.inchesToMeters(DriveConstants.WHEEL_RADIUS) / 60,
+            rightEncoderSim.getSpeed() / DriveConstants.GEAR_RATIO * 2 * Math.PI * Units.inchesToMeters(DriveConstants.WHEEL_RADIUS) / 60
+        );
+    }
+
+    public DifferentialDriveKinematics getKinematics() {
+        return kinematics;
+    }
+
+    public PIDController getleftPIDController() {
+        return leftPIDController;
+    }
+
+    public PIDController getrightPIDController() {
+        return rightPIDController;
     }
 
     @Override

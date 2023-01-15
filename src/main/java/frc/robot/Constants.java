@@ -35,6 +35,10 @@ public class Constants {
 
         public static final double SLOW_SPEED_FRACTION = 0.3;
 
+        // trajectory
+        public static final double GEAR_RATIO = 7.29;
+        public static final double WHEEL_RADIUS = 3.0;
+
     }
 
     public static final class JoystickConstants {
